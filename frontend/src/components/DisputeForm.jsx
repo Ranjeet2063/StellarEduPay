@@ -36,6 +36,11 @@ export default function DisputeForm({ txHash, studentId, onSuccess, onCancel }) 
     setExistingDisputeId(null);
 
     const validationErrors = validate();
+    const TX_HASH_REGEX = /^[0-9a-fA-F]{64}$/;
+    if (txHash && !TX_HASH_REGEX.test(txHash.trim())) {
+      setServerError(t("disputeForm.invalidTxHash") || "Invalid transaction hash format. It must be a 64-character hexadecimal string.");
+      return;
+    }
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;

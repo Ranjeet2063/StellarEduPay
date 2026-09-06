@@ -45,11 +45,27 @@ export default function VerifyPayment() {
   const [loading, setLoading]             = useState(false);
   const errorRef = useRef(null);
 
+  const TX_HASH_REGEX = /^[0-9a-fA-F]{64}$/;
+
   async function handleSubmit(e) {
     e.preventDefault();
+    const cleanTx = txHash.trim();
+    if (!cleanTx) return;
+
+    if (!TX_HASH_REGEX.test(cleanTx)) {
+      setError(
+        t("verifyPayment.invalidHashFormat") ||
+        "Transaction hash must be a 64-character hexadecimal string."
+      );
+      setResult(null);
+      setStellarStatusUrl(null);
+      errorRef.current?.focus();
+      return;
+    }
+
     setError(""); setResult(null); setStellarStatusUrl(null); setLoading(true);
     try {
-      const res = await verifyPayment(txHash.trim());
+      const res = await verifyPayment(cleanTx);
       setResult(res.data);
     } catch (err) {
       const stellar = parseStellarError(err);
@@ -94,6 +110,8 @@ export default function VerifyPayment() {
               value={txHash}
               onChange={e => setTxHash(e.target.value)}
               required
+              maxLength={64}
+              pattern="^[0-9a-fA-F]{64}$"
               className="form-input"
               style={{ fontFamily: "monospace", fontSize: "0.85rem" }}
             />
